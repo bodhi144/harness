@@ -14,7 +14,7 @@ export function TodoForm({ onAdd }: Props) {
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleSubmit()
+    if (e.key === 'Enter' && !e.nativeEvent.isComposing) handleSubmit()
   }
 
   return (
