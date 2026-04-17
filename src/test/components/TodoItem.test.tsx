@@ -113,14 +113,14 @@ describe('TodoItem', () => {
 
   it('shows subtask add input when + button clicked', () => {
     render(<TodoItem todo={makeTodo()} {...defaultProps} />)
-    fireEvent.click(screen.getByLabelText('서브태스크 추가: 테스트 할 일'))
+    fireEvent.click(screen.getByLabelText('서브태스크: 테스트 할 일'))
     expect(screen.getByLabelText('서브태스크 입력')).toBeTruthy()
   })
 
   it('calls onAddSubtask on Enter in subtask input', () => {
     const onAddSubtask = vi.fn()
     render(<TodoItem todo={makeTodo({ id: 'abc' })} {...defaultProps} onAddSubtask={onAddSubtask} />)
-    fireEvent.click(screen.getByLabelText('서브태스크 추가: 테스트 할 일'))
+    fireEvent.click(screen.getByLabelText('서브태스크: 테스트 할 일'))
     const input = screen.getByLabelText('서브태스크 입력')
     fireEvent.change(input, { target: { value: '새 서브태스크' } })
     fireEvent.keyDown(input, { key: 'Enter' })

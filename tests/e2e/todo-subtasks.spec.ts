@@ -11,28 +11,28 @@ test.beforeEach(async ({ page }) => {
 })
 
 test('adds a subtask via + button and Enter', async ({ page }) => {
-  await page.getByLabel('서브태스크 추가: 부모 할 일').click()
+  await page.getByLabel('서브태스크: 부모 할 일').click()
   await page.getByLabel('서브태스크 입력').fill('서브태스크 A')
   await page.getByLabel('서브태스크 입력').press('Enter')
   await expect(page.getByText('서브태스크 A')).toBeVisible()
 })
 
 test('adds a subtask via 추가 button', async ({ page }) => {
-  await page.getByLabel('서브태스크 추가: 부모 할 일').click()
+  await page.getByLabel('서브태스크: 부모 할 일').click()
   await page.getByLabel('서브태스크 입력').fill('서브태스크 B')
   await page.getByLabel('서브태스크 추가 확인').click()
   await expect(page.getByText('서브태스크 B')).toBeVisible()
 })
 
 test('cancels subtask add with 취소 button', async ({ page }) => {
-  await page.getByLabel('서브태스크 추가: 부모 할 일').click()
+  await page.getByLabel('서브태스크: 부모 할 일').click()
   await page.getByLabel('서브태스크 입력').fill('취소될 서브태스크')
   await page.getByLabel('서브태스크 추가 취소').click()
   await expect(page.getByText('취소될 서브태스크')).not.toBeVisible()
 })
 
 test('cancels subtask add with Escape key', async ({ page }) => {
-  await page.getByLabel('서브태스크 추가: 부모 할 일').click()
+  await page.getByLabel('서브태스크: 부모 할 일').click()
   await page.getByLabel('서브태스크 입력').fill('Escape 취소')
   await page.getByLabel('서브태스크 입력').press('Escape')
   await expect(page.getByText('Escape 취소')).not.toBeVisible()
@@ -40,7 +40,7 @@ test('cancels subtask add with Escape key', async ({ page }) => {
 
 test('toggles a subtask done/undone', async ({ page }) => {
   // Add subtask
-  await page.getByLabel('서브태스크 추가: 부모 할 일').click()
+  await page.getByLabel('서브태스크: 부모 할 일').click()
   await page.getByLabel('서브태스크 입력').fill('토글 서브태스크')
   await page.getByLabel('서브태스크 입력').press('Enter')
 
@@ -53,7 +53,7 @@ test('toggles a subtask done/undone', async ({ page }) => {
 })
 
 test('deletes a subtask', async ({ page }) => {
-  await page.getByLabel('서브태스크 추가: 부모 할 일').click()
+  await page.getByLabel('서브태스크: 부모 할 일').click()
   await page.getByLabel('서브태스크 입력').fill('삭제될 서브태스크')
   await page.getByLabel('서브태스크 입력').press('Enter')
   await expect(page.getByText('삭제될 서브태스크')).toBeVisible()
@@ -63,7 +63,7 @@ test('deletes a subtask', async ({ page }) => {
 })
 
 test('edits a subtask inline', async ({ page }) => {
-  await page.getByLabel('서브태스크 추가: 부모 할 일').click()
+  await page.getByLabel('서브태스크: 부모 할 일').click()
   await page.getByLabel('서브태스크 입력').fill('원래 서브태스크')
   await page.getByLabel('서브태스크 입력').press('Enter')
 
@@ -76,7 +76,7 @@ test('edits a subtask inline', async ({ page }) => {
 })
 
 test('subtasks persist across page reload', async ({ page }) => {
-  await page.getByLabel('서브태스크 추가: 부모 할 일').click()
+  await page.getByLabel('서브태스크: 부모 할 일').click()
   await page.getByLabel('서브태스크 입력').fill('지속되는 서브태스크')
   await page.getByLabel('서브태스크 입력').press('Enter')
   await expect(page.getByText('지속되는 서브태스크')).toBeVisible()
@@ -87,7 +87,7 @@ test('subtasks persist across page reload', async ({ page }) => {
 })
 
 test('parent todo and subtask are independent', async ({ page }) => {
-  await page.getByLabel('서브태스크 추가: 부모 할 일').click()
+  await page.getByLabel('서브태스크: 부모 할 일').click()
   await page.getByLabel('서브태스크 입력').fill('독립 서브태스크')
   await page.getByLabel('서브태스크 입력').press('Enter')
 

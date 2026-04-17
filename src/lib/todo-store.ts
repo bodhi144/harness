@@ -19,9 +19,9 @@ export function load(): Todo[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return []
-    const parsed = JSON.parse(raw) as Todo[]
+    const parsed = JSON.parse(raw) as Array<Omit<Todo, 'subtasks'> & { subtasks?: Todo['subtasks'] }>
     // Migrate old todos that don't have subtasks field
-    return parsed.map(t => ({ subtasks: [], ...t }))
+    return parsed.map(t => ({ ...t, subtasks: t.subtasks ?? [] }))
   } catch {
     return []
   }

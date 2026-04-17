@@ -268,7 +268,7 @@ export function TodoItem({
           <>
             <button
               onClick={() => setAddingSubtask(true)}
-              aria-label={`서브태스크 추가: ${todo.text}`}
+              aria-label={`서브태스크: ${todo.text}`}
               style={{
                 background: 'none',
                 border: 'none',
