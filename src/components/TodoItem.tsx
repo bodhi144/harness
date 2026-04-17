@@ -194,12 +194,16 @@ export function TodoItem({
     setEditText(todo.text)
   }
 
-  const commitAddSubtask = () => {
+  const commitAddSubtask = (keepOpen = false) => {
     if (subtaskText.trim()) {
       onAddSubtask(todo.id, subtaskText)
     }
     setSubtaskText('')
-    setAddingSubtask(false)
+    if (!keepOpen) {
+      setAddingSubtask(false)
+    } else {
+      subtaskInputRef.current?.focus()
+    }
   }
 
   const cancelAddSubtask = () => {
@@ -343,7 +347,10 @@ export function TodoItem({
                 value={subtaskText}
                 onChange={e => setSubtaskText(e.target.value)}
                 onKeyDown={e => {
-                  if (e.key === 'Enter') commitAddSubtask()
+                  if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                    e.preventDefault()
+                    commitAddSubtask(e.shiftKey)
+                  }
                   if (e.key === 'Escape') cancelAddSubtask()
                 }}
                 placeholder="서브태스크 입력..."
