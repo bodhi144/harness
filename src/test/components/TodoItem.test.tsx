@@ -117,7 +117,7 @@ describe('TodoItem', () => {
     expect(screen.getByLabelText('서브태스크 입력')).toBeTruthy()
   })
 
-  it('calls onAddSubtask on Enter in subtask input', () => {
+  it('calls onAddSubtask on Enter and closes input', () => {
     const onAddSubtask = vi.fn()
     render(<TodoItem todo={makeTodo({ id: 'abc' })} {...defaultProps} onAddSubtask={onAddSubtask} />)
     fireEvent.click(screen.getByLabelText('서브태스크: 테스트 할 일'))
@@ -125,6 +125,19 @@ describe('TodoItem', () => {
     fireEvent.change(input, { target: { value: '새 서브태스크' } })
     fireEvent.keyDown(input, { key: 'Enter' })
     expect(onAddSubtask).toHaveBeenCalledWith('abc', '새 서브태스크')
+    expect(screen.queryByLabelText('서브태스크 입력')).toBeNull()
+  })
+
+  it('calls onAddSubtask on Shift+Enter and keeps input open with cleared text', () => {
+    const onAddSubtask = vi.fn()
+    render(<TodoItem todo={makeTodo({ id: 'abc' })} {...defaultProps} onAddSubtask={onAddSubtask} />)
+    fireEvent.click(screen.getByLabelText('서브태스크: 테스트 할 일'))
+    const input = screen.getByLabelText('서브태스크 입력') as HTMLInputElement
+    fireEvent.change(input, { target: { value: '첫 번째' } })
+    fireEvent.keyDown(input, { key: 'Enter', shiftKey: true })
+    expect(onAddSubtask).toHaveBeenCalledWith('abc', '첫 번째')
+    expect(screen.getByLabelText('서브태스크 입력')).toBeTruthy()
+    expect(input.value).toBe('')
   })
 
   it('calls onToggleSubtask when subtask checkbox clicked', () => {

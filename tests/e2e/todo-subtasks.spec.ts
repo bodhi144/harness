@@ -86,6 +86,35 @@ test('subtasks persist across page reload', async ({ page }) => {
   await expect(page.getByText('지속되는 서브태스크')).toBeVisible()
 })
 
+test('Enter closes subtask input after adding', async ({ page }) => {
+  await page.getByLabel('서브태스크: 부모 할 일').click()
+  await page.getByLabel('서브태스크 입력').fill('하나만')
+  await page.getByLabel('서브태스크 입력').press('Enter')
+  await expect(page.getByText('하나만')).toBeVisible()
+  await expect(page.getByLabel('서브태스크 입력')).not.toBeVisible()
+})
+
+test('Shift+Enter adds subtask and keeps input open', async ({ page }) => {
+  await page.getByLabel('서브태스크: 부모 할 일').click()
+  const input = page.getByLabel('서브태스크 입력')
+  await input.fill('첫 번째')
+  await input.press('Shift+Enter')
+  await expect(page.getByText('첫 번째')).toBeVisible()
+  await expect(input).toBeVisible()
+  await expect(input).toBeFocused()
+  await expect(input).toHaveValue('')
+
+  await input.fill('두 번째')
+  await input.press('Shift+Enter')
+  await expect(page.getByText('두 번째')).toBeVisible()
+  await expect(input).toBeVisible()
+
+  await input.fill('세 번째')
+  await input.press('Enter')
+  await expect(page.getByText('세 번째')).toBeVisible()
+  await expect(input).not.toBeVisible()
+})
+
 test('parent todo and subtask are independent', async ({ page }) => {
   await page.getByLabel('서브태스크: 부모 할 일').click()
   await page.getByLabel('서브태스크 입력').fill('독립 서브태스크')
