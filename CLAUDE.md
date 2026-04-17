@@ -24,11 +24,13 @@ bash scripts/harness/pre-task.sh
 Checks: correct worktree, deps installed, plan file present, branch not main.
 If it fails → fix the environment. Do not skip.
 
-## Task Exit — Feedback (run after each milestone changes code)
+## Task Exit — Feedback (run once before promoting the plan)
 ```bash
 bash scripts/harness/post-task.sh
 ```
 Runs: vitest → playwright → eslint → tsc → validate-arch.sh.
+Run this **only at the final stage**, just before `promote-plan.sh`.
+Commits within the worktree are free — no gate required per commit.
 If any gate fails:
   - **Do NOT retry the same approach harder.**
   - Write a diagnosis entry in the ExecPlan under `## Decision Log`.

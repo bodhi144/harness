@@ -1,7 +1,5 @@
 # Harness System Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Build a fully autonomous AI agent execution harness for a web application project — enforcing ExecPlan-driven development, git worktree isolation, vitest/playwright validation gates, and self-correcting feedback loops.
 
 **Architecture:** The harness wraps the Claude Code agent with a "world" layer of shell scripts, hooks, and markdown conventions. Every feature branch gets an isolated git worktree. Feedforward checks gate task entry; feedback loops block completion without verifiable test evidence. On failure, the agent mutates its plan or tools — not its effort level.

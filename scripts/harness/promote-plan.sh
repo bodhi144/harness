@@ -17,6 +17,10 @@ FILENAME=$(basename "$PLAN_FILE")
 COMPLETED_FILE="exec-plans/completed/${FILENAME}"
 
 echo ""
+echo "=== Running post-task gate before promotion ==="
+bash scripts/harness/post-task.sh
+echo ""
+
 echo "=== Promoting ExecPlan to completed ==="
 echo "  From: ${PLAN_FILE}"
 echo "  To:   ${COMPLETED_FILE}"
