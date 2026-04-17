@@ -7,6 +7,7 @@ import {
   addTodo,
   toggleTodo,
   deleteTodo,
+  editTodo,
 } from './todo-store'
 
 // Mock crypto.randomUUID
@@ -167,6 +168,59 @@ describe('todo-store', () => {
         { id: '1', text: 'Test', done: false, createdAt: 1000 },
       ]
       const result = deleteTodo(todos, 'nonexistent')
+      expect(result).toEqual(todos)
+    })
+  })
+
+  describe('editTodo', () => {
+    it('updates the text of the matching todo', () => {
+      const todos: Todo[] = [
+        { id: '1', text: 'Old text', done: false, createdAt: 1000 },
+      ]
+      const result = editTodo(todos, '1', 'New text')
+      expect(result[0].text).toBe('New text')
+    })
+
+    it('trims whitespace from new text', () => {
+      const todos: Todo[] = [
+        { id: '1', text: 'Old', done: false, createdAt: 1000 },
+      ]
+      const result = editTodo(todos, '1', '  Trimmed  ')
+      expect(result[0].text).toBe('Trimmed')
+    })
+
+    it('returns unchanged list when new text is empty', () => {
+      const todos: Todo[] = [
+        { id: '1', text: 'Old', done: false, createdAt: 1000 },
+      ]
+      const result = editTodo(todos, '1', '   ')
+      expect(result[0].text).toBe('Old')
+    })
+
+    it('does not affect other todos', () => {
+      const todos: Todo[] = [
+        { id: '1', text: 'First', done: false, createdAt: 1000 },
+        { id: '2', text: 'Second', done: false, createdAt: 2000 },
+      ]
+      const result = editTodo(todos, '1', 'Updated')
+      expect(result[0].text).toBe('Updated')
+      expect(result[1].text).toBe('Second')
+    })
+
+    it('does not mutate the original array', () => {
+      const todos: Todo[] = [
+        { id: '1', text: 'Original', done: false, createdAt: 1000 },
+      ]
+      const result = editTodo(todos, '1', 'Changed')
+      expect(todos[0].text).toBe('Original')
+      expect(result[0].text).toBe('Changed')
+    })
+
+    it('returns unchanged list when id is not found', () => {
+      const todos: Todo[] = [
+        { id: '1', text: 'Test', done: false, createdAt: 1000 },
+      ]
+      const result = editTodo(todos, 'nonexistent', 'New text')
       expect(result).toEqual(todos)
     })
   })
