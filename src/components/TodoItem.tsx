@@ -367,7 +367,7 @@ export function TodoItem({
                 }}
               />
               <button
-                onClick={commitAddSubtask}
+                onClick={() => commitAddSubtask()}
                 aria-label="서브태스크 추가 확인"
                 style={{
                   background: '#7c6af7',
