@@ -2,7 +2,18 @@ import { useState } from 'react'
 
 import { TodoForm } from '../components/TodoForm'
 import { TodoList } from '../components/TodoList'
-import { load, save, addTodo, toggleTodo, deleteTodo, editTodo } from '../lib/todo-store'
+import {
+  load,
+  save,
+  addTodo,
+  toggleTodo,
+  deleteTodo,
+  editTodo,
+  addSubtask,
+  toggleSubtask,
+  deleteSubtask,
+  editSubtask,
+} from '../lib/todo-store'
 
 export function TodoPage() {
   const [todos, setTodos] = useState(load)
@@ -16,6 +27,12 @@ export function TodoPage() {
   const handleToggle = (id: string) => mutate(toggleTodo(todos, id))
   const handleDelete = (id: string) => mutate(deleteTodo(todos, id))
   const handleEdit = (id: string, text: string) => mutate(editTodo(todos, id, text))
+
+  const handleAddSubtask = (parentId: string, text: string) => mutate(addSubtask(todos, parentId, text))
+  const handleToggleSubtask = (parentId: string, subId: string) => mutate(toggleSubtask(todos, parentId, subId))
+  const handleDeleteSubtask = (parentId: string, subId: string) => mutate(deleteSubtask(todos, parentId, subId))
+  const handleEditSubtask = (parentId: string, subId: string, text: string) =>
+    mutate(editSubtask(todos, parentId, subId, text))
 
   const remaining = todos.filter(t => !t.done).length
 
@@ -39,7 +56,16 @@ export function TodoPage() {
         Todo
       </h1>
       <TodoForm onAdd={handleAdd} />
-      <TodoList todos={todos} onToggle={handleToggle} onDelete={handleDelete} onEdit={handleEdit} />
+      <TodoList
+        todos={todos}
+        onToggle={handleToggle}
+        onDelete={handleDelete}
+        onEdit={handleEdit}
+        onAddSubtask={handleAddSubtask}
+        onToggleSubtask={handleToggleSubtask}
+        onDeleteSubtask={handleDeleteSubtask}
+        onEditSubtask={handleEditSubtask}
+      />
       {todos.length > 0 && (
         <p
           style={{
