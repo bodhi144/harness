@@ -1,9 +1,9 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 
-import type { Todo } from '../lib/todo-store'
+import { TodoItem } from '../../components/TodoItem'
+import type { Todo } from '../../lib/todo-store'
 
-import { TodoItem } from './TodoItem'
 
 const makeTodo = (overrides: Partial<Todo> = {}): Todo => ({
   id: 'test-id',

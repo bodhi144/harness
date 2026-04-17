@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 
-import { TodoForm } from './TodoForm'
+import { TodoForm } from '../../components/TodoForm'
 
 describe('TodoForm', () => {
   it('calls onAdd with input text when button clicked', () => {

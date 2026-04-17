@@ -8,7 +8,7 @@ import {
   toggleTodo,
   deleteTodo,
   editTodo,
-} from './todo-store'
+} from '../../lib/todo-store'
 
 // Mock crypto.randomUUID
 vi.stubGlobal('crypto', {
