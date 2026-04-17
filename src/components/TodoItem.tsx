@@ -1,5 +1,6 @@
 // src/components/TodoItem.tsx
 import { useState } from 'react'
+
 import type { Todo } from '../lib/todo-store'
 
 interface Props {
