@@ -1,8 +1,11 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 
+import './index.css'
+import { TodoPage } from './pages/TodoPage'
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <div>Harness Web App</div>
+    <TodoPage />
   </React.StrictMode>
 )
