@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 import {
   type Todo,
@@ -9,24 +9,6 @@ import {
   deleteTodo,
 } from './todo-store'
 
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {}
-  return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => {
-      store[key] = value.toString()
-    },
-    clear: () => {
-      store = {}
-    },
-  }
-})()
-
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
-})
-
 // Mock crypto.randomUUID
 vi.stubGlobal('crypto', {
   randomUUID: () => 'test-uuid-' + Math.random().toString(36).slice(2, 11),
@@ -34,7 +16,11 @@ vi.stubGlobal('crypto', {
 
 describe('todo-store', () => {
   beforeEach(() => {
-    localStorageMock.clear()
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
   })
 
   describe('load', () => {
