@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# promote-plan.sh — Moves a completed ExecPlan from active/ to completed/.
-# Run this after merging the feature branch into main.
+# promote-plan.sh — Merges the feature branch into main and moves the ExecPlan to completed/.
 # Usage: bash scripts/harness/promote-plan.sh <plan-file>
 # Example: bash scripts/harness/promote-plan.sh exec-plans/active/2026-04-17-user-auth.md
 
@@ -15,10 +14,38 @@ fi
 
 FILENAME=$(basename "$PLAN_FILE")
 COMPLETED_FILE="exec-plans/completed/${FILENAME}"
+BRANCH_NAME=$(grep "^\*\*Branch:\*\*" "${PLAN_FILE}" | head -1 | awk '{print $2}')
+FEATURE_NAME=$(basename "${PLAN_FILE%.md}" | sed 's/[0-9]*-[0-9]*-[0-9]*-//')
+WORKTREE_PATH="$(git rev-parse --show-toplevel)/../worktrees/${FEATURE_NAME}"
+
+# Must be on main
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$CURRENT_BRANCH" != "main" ] && [ "$CURRENT_BRANCH" != "master" ]; then
+  echo "ERROR: promote-plan.sh must be run from main. Currently on: ${CURRENT_BRANCH}"
+  exit 1
+fi
+
+if [ -z "$BRANCH_NAME" ]; then
+  echo "ERROR: Could not find **Branch:** in plan file."
+  exit 1
+fi
+
+if ! git show-ref --verify --quiet "refs/heads/${BRANCH_NAME}"; then
+  echo "ERROR: Branch '${BRANCH_NAME}' not found locally."
+  exit 1
+fi
 
 echo ""
-echo "=== Running post-task gate before promotion ==="
-bash scripts/harness/post-task.sh
+echo "=== Running post-task gate (in worktree) ==="
+if [ -d "$WORKTREE_PATH" ]; then
+  (cd "$WORKTREE_PATH" && bash scripts/harness/post-task.sh)
+else
+  bash scripts/harness/post-task.sh
+fi
+echo ""
+
+echo "=== Merging ${BRANCH_NAME} into main ==="
+git merge --no-ff "${BRANCH_NAME}" -m "feat: merge ${FEATURE_NAME}"
 echo ""
 
 echo "=== Promoting ExecPlan to completed ==="
@@ -37,8 +64,12 @@ mv "${PLAN_FILE}" "${COMPLETED_FILE}"
 git add "${PLAN_FILE}" "${COMPLETED_FILE}" 2>/dev/null || git add "${COMPLETED_FILE}"
 git commit -m "chore: promote ExecPlan ${FILENAME} to completed"
 
-echo "ExecPlan promoted. Branch and worktree cleanup:"
-BRANCH_NAME=$(grep "Branch:" "${COMPLETED_FILE}" | head -1 | awk '{print $2}')
-echo "  git worktree remove ../worktrees/\$(basename ${PLAN_FILE%.md} | sed 's/[0-9]*-[0-9]*-[0-9]*-//')"
-echo "  git branch -d ${BRANCH_NAME}"
+echo "=== Cleaning up worktree and branch ==="
+if [ -d "$WORKTREE_PATH" ]; then
+  git worktree remove "$WORKTREE_PATH" && echo "  Removed worktree: ${WORKTREE_PATH}"
+fi
+git branch -d "${BRANCH_NAME}" && echo "  Deleted branch: ${BRANCH_NAME}"
+
+echo ""
+echo "Done. Run 'git push' when ready."
 echo ""
