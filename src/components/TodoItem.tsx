@@ -1,4 +1,5 @@
 // src/components/TodoItem.tsx
+import { useState } from 'react'
 import type { Todo } from '../lib/todo-store'
 
 interface Props {
@@ -8,6 +9,8 @@ interface Props {
 }
 
 export function TodoItem({ todo, onToggle, onDelete }: Props) {
+  const [deleteHovered, setDeleteHovered] = useState(false)
+
   return (
     <div
       style={{
@@ -43,15 +46,15 @@ export function TodoItem({ todo, onToggle, onDelete }: Props) {
         style={{
           background: 'none',
           border: 'none',
-          color: '#6b6b6b',
+          color: deleteHovered ? '#ff4d4d' : '#6b6b6b',
           cursor: 'pointer',
           fontSize: '1rem',
           padding: '0.25rem 0.5rem',
           borderRadius: '4px',
           transition: 'color 0.15s',
         }}
-        onMouseEnter={e => (e.currentTarget.style.color = '#ff4d4d')}
-        onMouseLeave={e => (e.currentTarget.style.color = '#6b6b6b')}
+        onMouseEnter={() => setDeleteHovered(true)}
+        onMouseLeave={() => setDeleteHovered(false)}
       >
         ✕
       </button>
