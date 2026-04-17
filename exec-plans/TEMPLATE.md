@@ -31,14 +31,12 @@
 - [ ] Implement: [what the code does]
 - [ ] Write vitest tests that assert the concrete outputs of the implementation
 - [ ] Run tests — confirm they pass; if a test exposes a bug, fix the implementation
-- [ ] `bash scripts/harness/post-task.sh`
 - [ ] Commit: `git commit -m "feat(...): ..."`
 
 ### Milestone 2: [Name]
 - [ ] Implement: [what the user-facing behavior does]
 - [ ] Write playwright spec that asserts the user flow end to end
 - [ ] Run spec — confirm it passes; if it exposes a bug, fix the implementation
-- [ ] `bash scripts/harness/post-task.sh`
 - [ ] Commit: `git commit -m "feat(...): ..."`
 
 ## Verification
