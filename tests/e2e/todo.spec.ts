@@ -1,63 +1,50 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../fixtures/test'
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/')
-  // clear localStorage before each test
-  await page.evaluate(() => localStorage.clear())
-  await page.reload()
-})
+test.describe('Todo basics', () => {
+  test('adds a todo and shows it in the list', async ({ todoPage }) => {
+    await todoPage.addTodo('장보기')
+    await expect(todoPage.todoText('장보기')).toBeVisible()
+  })
 
-test('adds a todo and it appears in the list', async ({ page }) => {
-  await page.getByLabel('새 할 일').fill('장보기')
-  await page.getByRole('button', { name: '추가' }).click()
-  await expect(page.getByText('장보기')).toBeVisible()
-})
+  test('adds a todo with the Enter key', async ({ todoPage }) => {
+    await todoPage.addTodoWithEnter('독서하기')
+    await expect(todoPage.todoText('독서하기')).toBeVisible()
+  })
 
-test('adds a todo with Enter key', async ({ page }) => {
-  await page.getByLabel('새 할 일').fill('독서하기')
-  await page.getByLabel('새 할 일').press('Enter')
-  await expect(page.getByText('독서하기')).toBeVisible()
-})
+  test('clears the input after adding a todo', async ({ todoPage }) => {
+    await todoPage.addTodo('운동하기')
+    await expect(todoPage.newTodoInput).toHaveValue('')
+  })
 
-test('input clears after adding', async ({ page }) => {
-  await page.getByLabel('새 할 일').fill('운동하기')
-  await page.getByRole('button', { name: '추가' }).click()
-  await expect(page.getByLabel('새 할 일')).toHaveValue('')
-})
+  test('does not add an empty todo', async ({ todoPage, page }) => {
+    await todoPage.addButton.click()
+    await expect(page.locator('input[type="checkbox"]')).toHaveCount(0)
+    await expect(todoPage.emptyState).toBeVisible()
+  })
 
-test('does not add empty todo', async ({ page }) => {
-  await page.getByRole('button', { name: '추가' }).click()
-  await expect(page.locator('input[type="checkbox"]')).toHaveCount(0)
-})
+  test('marks a todo complete with a strikethrough', async ({ todoPage }) => {
+    await todoPage.seedTodo('청소하기')
+    await todoPage.todoCheckbox('청소하기').check()
+    await expect(todoPage.todoText('청소하기')).toHaveCSS('text-decoration-line', 'line-through')
+  })
 
-test('completes a todo — shows strikethrough', async ({ page }) => {
-  await page.getByLabel('새 할 일').fill('청소하기')
-  await page.getByRole('button', { name: '추가' }).click()
-  await page.getByLabel('완료: 청소하기').check()
-  const text = page.getByText('청소하기')
-  await expect(text).toHaveCSS('text-decoration-line', 'line-through')
-})
+  test('deletes a todo', async ({ todoPage }) => {
+    await todoPage.seedTodo('삭제할 항목')
+    await todoPage.deleteButton('삭제할 항목').click()
+    await expect(todoPage.todoText('삭제할 항목')).not.toBeVisible()
+  })
 
-test('deletes a todo', async ({ page }) => {
-  await page.getByLabel('새 할 일').fill('삭제할 항목')
-  await page.getByRole('button', { name: '추가' }).click()
-  await page.getByLabel('삭제: 삭제할 항목').click()
-  await expect(page.getByText('삭제할 항목')).not.toBeVisible()
-})
+  test('persists todos after a reload', async ({ todoPage, page }) => {
+    await todoPage.seedTodo('유지되는 항목')
+    await page.reload()
+    await expect(todoPage.todoText('유지되는 항목')).toBeVisible()
+  })
 
-test('persists todos after page reload', async ({ page }) => {
-  await page.getByLabel('새 할 일').fill('유지되는 항목')
-  await page.getByRole('button', { name: '추가' }).click()
-  await page.reload()
-  await expect(page.getByText('유지되는 항목')).toBeVisible()
-})
-
-test('remaining count updates correctly', async ({ page }) => {
-  await page.getByLabel('새 할 일').fill('항목 1')
-  await page.getByRole('button', { name: '추가' }).click()
-  await page.getByLabel('새 할 일').fill('항목 2')
-  await page.getByRole('button', { name: '추가' }).click()
-  await expect(page.getByText('2개 남음')).toBeVisible()
-  await page.getByLabel('완료: 항목 1').check()
-  await expect(page.getByText('1개 남음')).toBeVisible()
+  test('updates the remaining count deterministically', async ({ todoPage }) => {
+    await todoPage.seedTodo('항목 1')
+    await todoPage.seedTodo('항목 2')
+    await expect(todoPage.remainingCount(2)).toBeVisible()
+    await todoPage.todoCheckbox('항목 1').check()
+    await expect(todoPage.remainingCount(1)).toBeVisible()
+  })
 })

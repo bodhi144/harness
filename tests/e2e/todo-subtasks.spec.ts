@@ -1,129 +1,90 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../fixtures/test'
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/')
-  await page.evaluate(() => localStorage.clear())
-  await page.reload()
-  // Add a parent todo to work with
-  await page.getByLabel('새 할 일').fill('부모 할 일')
-  await page.getByRole('button', { name: '추가' }).click()
-  await expect(page.getByText('부모 할 일')).toBeVisible()
-})
+test.describe('Todo subtasks', () => {
+  test.beforeEach(async ({ todoPage }) => {
+    await todoPage.seedTodo('부모 할 일')
+    await todoPage.openSubtaskComposer('부모 할 일')
+  })
 
-test('adds a subtask via + button and Enter', async ({ page }) => {
-  await page.getByLabel('서브태스크: 부모 할 일').click()
-  await page.getByLabel('서브태스크 입력').fill('서브태스크 A')
-  await page.getByLabel('서브태스크 입력').press('Enter')
-  await expect(page.getByText('서브태스크 A')).toBeVisible()
-})
+  test('adds a subtask with Enter', async ({ todoPage }) => {
+    await todoPage.addSubtask('서브태스크 A')
+    await expect(todoPage.todoText('서브태스크 A')).toBeVisible()
+  })
 
-test('adds a subtask via 추가 button', async ({ page }) => {
-  await page.getByLabel('서브태스크: 부모 할 일').click()
-  await page.getByLabel('서브태스크 입력').fill('서브태스크 B')
-  await page.getByLabel('서브태스크 추가 확인').click()
-  await expect(page.getByText('서브태스크 B')).toBeVisible()
-})
+  test('adds a subtask with the confirm button', async ({ todoPage }) => {
+    await todoPage.addSubtask('서브태스크 B', 'button')
+    await expect(todoPage.todoText('서브태스크 B')).toBeVisible()
+  })
 
-test('cancels subtask add with 취소 button', async ({ page }) => {
-  await page.getByLabel('서브태스크: 부모 할 일').click()
-  await page.getByLabel('서브태스크 입력').fill('취소될 서브태스크')
-  await page.getByLabel('서브태스크 추가 취소').click()
-  await expect(page.getByText('취소될 서브태스크')).not.toBeVisible()
-})
+  test('cancels a subtask with the cancel button', async ({ todoPage }) => {
+    await todoPage.cancelSubtask('취소될 서브태스크', 'button')
+    await expect(todoPage.todoText('취소될 서브태스크')).not.toBeVisible()
+  })
 
-test('cancels subtask add with Escape key', async ({ page }) => {
-  await page.getByLabel('서브태스크: 부모 할 일').click()
-  await page.getByLabel('서브태스크 입력').fill('Escape 취소')
-  await page.getByLabel('서브태스크 입력').press('Escape')
-  await expect(page.getByText('Escape 취소')).not.toBeVisible()
-})
+  test('cancels a subtask with Escape', async ({ todoPage }) => {
+    await todoPage.cancelSubtask('Escape 취소')
+    await expect(todoPage.todoText('Escape 취소')).not.toBeVisible()
+  })
 
-test('toggles a subtask done/undone', async ({ page }) => {
-  // Add subtask
-  await page.getByLabel('서브태스크: 부모 할 일').click()
-  await page.getByLabel('서브태스크 입력').fill('토글 서브태스크')
-  await page.getByLabel('서브태스크 입력').press('Enter')
+  test('toggles a subtask done and undone', async ({ todoPage }) => {
+    await todoPage.addSubtask('토글 서브태스크')
+    const subtaskCheckbox = todoPage.todoCheckbox('토글 서브태스크')
+    await expect(subtaskCheckbox).not.toBeChecked()
+    await subtaskCheckbox.click()
+    await expect(subtaskCheckbox).toBeChecked()
+    await subtaskCheckbox.click()
+    await expect(subtaskCheckbox).not.toBeChecked()
+  })
 
-  const subtaskCheckbox = page.getByLabel('완료: 토글 서브태스크')
-  await expect(subtaskCheckbox).not.toBeChecked()
-  await subtaskCheckbox.click()
-  await expect(subtaskCheckbox).toBeChecked()
-  await subtaskCheckbox.click()
-  await expect(subtaskCheckbox).not.toBeChecked()
-})
+  test('deletes a subtask', async ({ todoPage }) => {
+    await todoPage.addSubtask('삭제될 서브태스크')
+    await expect(todoPage.todoText('삭제될 서브태스크')).toBeVisible()
+    await todoPage.deleteButton('삭제될 서브태스크').click()
+    await expect(todoPage.todoText('삭제될 서브태스크')).not.toBeVisible()
+  })
 
-test('deletes a subtask', async ({ page }) => {
-  await page.getByLabel('서브태스크: 부모 할 일').click()
-  await page.getByLabel('서브태스크 입력').fill('삭제될 서브태스크')
-  await page.getByLabel('서브태스크 입력').press('Enter')
-  await expect(page.getByText('삭제될 서브태스크')).toBeVisible()
+  test('edits a subtask inline', async ({ todoPage }) => {
+    await todoPage.addSubtask('원래 서브태스크')
+    await todoPage.startEditingSubtask('원래 서브태스크')
+    await todoPage.saveTodoEdit('원래 서브태스크', '수정된 서브태스크')
+    await expect(todoPage.todoText('수정된 서브태스크')).toBeVisible()
+    await expect(todoPage.todoText('원래 서브태스크')).not.toBeVisible()
+  })
 
-  await page.getByLabel('삭제: 삭제될 서브태스크').click()
-  await expect(page.getByText('삭제될 서브태스크')).not.toBeVisible()
-})
+  test('persists subtasks across reload', async ({ todoPage, page }) => {
+    await todoPage.addSubtask('지속되는 서브태스크')
+    await expect(todoPage.todoText('지속되는 서브태스크')).toBeVisible()
+    await page.reload()
+    await expect(todoPage.todoText('부모 할 일')).toBeVisible()
+    await expect(todoPage.todoText('지속되는 서브태스크')).toBeVisible()
+  })
 
-test('edits a subtask inline', async ({ page }) => {
-  await page.getByLabel('서브태스크: 부모 할 일').click()
-  await page.getByLabel('서브태스크 입력').fill('원래 서브태스크')
-  await page.getByLabel('서브태스크 입력').press('Enter')
+  test('closes the subtask input after Enter', async ({ todoPage }) => {
+    await todoPage.addSubtask('하나만')
+    await expect(todoPage.todoText('하나만')).toBeVisible()
+    await expect(todoPage.subtaskInput).not.toBeVisible()
+  })
 
-  await page.getByLabel('수정: 원래 서브태스크').click()
-  const editInput = page.getByLabel('수정: 원래 서브태스크')
-  await editInput.fill('수정된 서브태스크')
-  await editInput.press('Enter')
-  await expect(page.getByText('수정된 서브태스크')).toBeVisible()
-  await expect(page.getByText('원래 서브태스크')).not.toBeVisible()
-})
+  test('keeps the subtask input open after Shift+Enter', async ({ todoPage }) => {
+    await todoPage.addSubtask('첫 번째', 'Shift+Enter')
+    await expect(todoPage.todoText('첫 번째')).toBeVisible()
+    await expect(todoPage.subtaskInput).toBeVisible()
+    await expect(todoPage.subtaskInput).toBeFocused()
+    await expect(todoPage.subtaskInput).toHaveValue('')
 
-test('subtasks persist across page reload', async ({ page }) => {
-  await page.getByLabel('서브태스크: 부모 할 일').click()
-  await page.getByLabel('서브태스크 입력').fill('지속되는 서브태스크')
-  await page.getByLabel('서브태스크 입력').press('Enter')
-  await expect(page.getByText('지속되는 서브태스크')).toBeVisible()
+    await todoPage.addSubtask('두 번째', 'Shift+Enter')
+    await expect(todoPage.todoText('두 번째')).toBeVisible()
+    await expect(todoPage.subtaskInput).toBeVisible()
 
-  await page.reload()
-  await expect(page.getByText('부모 할 일')).toBeVisible()
-  await expect(page.getByText('지속되는 서브태스크')).toBeVisible()
-})
+    await todoPage.addSubtask('세 번째')
+    await expect(todoPage.todoText('세 번째')).toBeVisible()
+    await expect(todoPage.subtaskInput).not.toBeVisible()
+  })
 
-test('Enter closes subtask input after adding', async ({ page }) => {
-  await page.getByLabel('서브태스크: 부모 할 일').click()
-  await page.getByLabel('서브태스크 입력').fill('하나만')
-  await page.getByLabel('서브태스크 입력').press('Enter')
-  await expect(page.getByText('하나만')).toBeVisible()
-  await expect(page.getByLabel('서브태스크 입력')).not.toBeVisible()
-})
-
-test('Shift+Enter adds subtask and keeps input open', async ({ page }) => {
-  await page.getByLabel('서브태스크: 부모 할 일').click()
-  const input = page.getByLabel('서브태스크 입력')
-  await input.fill('첫 번째')
-  await input.press('Shift+Enter')
-  await expect(page.getByText('첫 번째')).toBeVisible()
-  await expect(input).toBeVisible()
-  await expect(input).toBeFocused()
-  await expect(input).toHaveValue('')
-
-  await input.fill('두 번째')
-  await input.press('Shift+Enter')
-  await expect(page.getByText('두 번째')).toBeVisible()
-  await expect(input).toBeVisible()
-
-  await input.fill('세 번째')
-  await input.press('Enter')
-  await expect(page.getByText('세 번째')).toBeVisible()
-  await expect(input).not.toBeVisible()
-})
-
-test('parent todo and subtask are independent', async ({ page }) => {
-  await page.getByLabel('서브태스크: 부모 할 일').click()
-  await page.getByLabel('서브태스크 입력').fill('독립 서브태스크')
-  await page.getByLabel('서브태스크 입력').press('Enter')
-
-  // Toggle parent
-  await page.getByLabel('완료: 부모 할 일').click()
-  // Subtask should still be visible and independently togglable
-  await expect(page.getByText('독립 서브태스크')).toBeVisible()
-  const subCheckbox = page.getByLabel('완료: 독립 서브태스크')
-  await expect(subCheckbox).not.toBeChecked()
+  test('keeps parent todos and subtasks independent', async ({ todoPage }) => {
+    await todoPage.addSubtask('독립 서브태스크')
+    await todoPage.todoCheckbox('부모 할 일').click()
+    await expect(todoPage.todoText('독립 서브태스크')).toBeVisible()
+    await expect(todoPage.todoCheckbox('독립 서브태스크')).not.toBeChecked()
+  })
 })

@@ -1,53 +1,39 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../fixtures/test'
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/')
-  await page.evaluate(() => localStorage.clear())
-  await page.reload()
-  // seed one todo
-  await page.getByLabel('새 할 일').fill('원래 할 일')
-  await page.getByRole('button', { name: '추가' }).click()
-  await expect(page.getByText('원래 할 일')).toBeVisible()
-})
+test.describe('Todo editing', () => {
+  test.beforeEach(async ({ todoPage }) => {
+    await todoPage.seedTodo('원래 할 일')
+  })
 
-test('edit button shows inline input with current text', async ({ page }) => {
-  await page.getByRole('button', { name: '수정: 원래 할 일' }).click()
-  const input = page.getByLabel('수정: 원래 할 일')
-  await expect(input).toBeVisible()
-  await expect(input).toHaveValue('원래 할 일')
-})
+  test('shows the current text in the inline editor', async ({ todoPage }) => {
+    await todoPage.startEditingTodo('원래 할 일')
+    await expect(todoPage.editInput('원래 할 일')).toHaveValue('원래 할 일')
+  })
 
-test('edit and save with Enter updates the todo text', async ({ page }) => {
-  await page.getByRole('button', { name: '수정: 원래 할 일' }).click()
-  const input = page.getByLabel('수정: 원래 할 일')
-  await input.fill('수정된 할 일')
-  await input.press('Enter')
-  await expect(page.getByText('수정된 할 일')).toBeVisible()
-  await expect(page.getByText('원래 할 일')).not.toBeVisible()
-})
+  test('saves an edit with Enter', async ({ todoPage }) => {
+    await todoPage.startEditingTodo('원래 할 일')
+    await todoPage.saveTodoEdit('원래 할 일', '수정된 할 일')
+    await expect(todoPage.todoText('수정된 할 일')).toBeVisible()
+    await expect(todoPage.todoText('원래 할 일')).not.toBeVisible()
+  })
 
-test('edit and save on blur updates the todo text', async ({ page }) => {
-  await page.getByRole('button', { name: '수정: 원래 할 일' }).click()
-  const input = page.getByLabel('수정: 원래 할 일')
-  await input.fill('blur로 저장')
-  await input.blur()
-  await expect(page.getByText('blur로 저장')).toBeVisible()
-})
+  test('saves an edit on blur', async ({ todoPage }) => {
+    await todoPage.startEditingTodo('원래 할 일')
+    await todoPage.saveTodoEdit('원래 할 일', 'blur로 저장', 'blur')
+    await expect(todoPage.todoText('blur로 저장')).toBeVisible()
+  })
 
-test('Escape cancels edit and restores original text', async ({ page }) => {
-  await page.getByRole('button', { name: '수정: 원래 할 일' }).click()
-  const input = page.getByLabel('수정: 원래 할 일')
-  await input.fill('취소할 내용')
-  await input.press('Escape')
-  await expect(page.getByText('원래 할 일')).toBeVisible()
-  await expect(page.getByText('취소할 내용')).not.toBeVisible()
-})
+  test('cancels an edit with Escape', async ({ todoPage }) => {
+    await todoPage.startEditingTodo('원래 할 일')
+    await todoPage.cancelTodoEdit('원래 할 일', '취소할 내용')
+    await expect(todoPage.todoText('원래 할 일')).toBeVisible()
+    await expect(todoPage.todoText('취소할 내용')).not.toBeVisible()
+  })
 
-test('edited text persists after page reload', async ({ page }) => {
-  await page.getByRole('button', { name: '수정: 원래 할 일' }).click()
-  const input = page.getByLabel('수정: 원래 할 일')
-  await input.fill('저장되는 수정')
-  await input.press('Enter')
-  await page.reload()
-  await expect(page.getByText('저장되는 수정')).toBeVisible()
+  test('persists an edited todo after reload', async ({ todoPage, page }) => {
+    await todoPage.startEditingTodo('원래 할 일')
+    await todoPage.saveTodoEdit('원래 할 일', '저장되는 수정')
+    await page.reload()
+    await expect(todoPage.todoText('저장되는 수정')).toBeVisible()
+  })
 })
